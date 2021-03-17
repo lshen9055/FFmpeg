@@ -4905,6 +4905,7 @@ static int mov_read_sidx(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     int64_t stream_size = avio_size(pb);
     int64_t offset = av_sat_add64(avio_tell(pb), atom.size), pts, timestamp;
     uint8_t version, is_complete;
+    int64_t offadd;
     unsigned i, j, track_id, item_count;
     AVStream *st = NULL;
     AVStream *ref_st = NULL;
@@ -4942,11 +4943,15 @@ static int mov_read_sidx(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     if (version == 0) {
         pts = avio_rb32(pb);
-        offset += avio_rb32(pb);
+        offadd= avio_rb32(pb);
     } else {
         pts = avio_rb64(pb);
-        offset += avio_rb64(pb);
+        offadd= avio_rb64(pb);
     }
+    if (av_sat_add64(offset, offadd) != offset + (uint64_t)offadd)
+        return AVERROR_INVALIDDATA;
+
+    offset += (uint64_t)offadd;
 
     avio_rb16(pb); // reserved
 
@@ -4969,6 +4974,8 @@ static int mov_read_sidx(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         if (frag_stream_info)
             frag_stream_info->sidx_pts = timestamp;
 
+        if (av_sat_add64(offset, size) != offset + size)
+            return AVERROR_INVALIDDATA;
         offset += size;
         pts += duration;
     }
