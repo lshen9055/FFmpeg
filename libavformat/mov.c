@@ -4974,7 +4974,10 @@ static int mov_read_sidx(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         if (frag_stream_info)
             frag_stream_info->sidx_pts = timestamp;
 
-        if (av_sat_add64(offset, size) != offset + size)
+
+        if (av_sat_add64(offset, size) != offset + (uint64_t)size ||
+            av_sat_add64(pts, duration) != pts + (uint64_t)duration
+        )
             return AVERROR_INVALIDDATA;
         offset += size;
         pts += duration;
