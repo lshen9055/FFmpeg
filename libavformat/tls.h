@@ -32,7 +32,7 @@ typedef struct TLSShared {
     char *cert_file;
     char *key_file;
     int listen;
-
+    char *http_proxy;
     char *host;
 
     char underlying_host[200];

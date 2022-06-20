@@ -2120,6 +2120,8 @@ SYSTEM_FUNCS="
     CommandLineToArgvW
     fcntl
     getaddrinfo
+    getauxval
+    getenv
     gethrtime
     getopt
     GetProcessAffinityMask

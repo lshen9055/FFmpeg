@@ -203,7 +203,7 @@ static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
     char auth[1024], proxyauth[1024] = "";
     char path1[MAX_URL_SIZE];
     char buf[1024], urlbuf[MAX_URL_SIZE];
-    int port, use_proxy, err = 0;
+    int port, use_proxy, err = 0,location_changed = 0;;
     HTTPContext *s = h->priv_data;
 
     lower_proto = s->tcp_hook;
@@ -264,11 +264,9 @@ static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
 end:
     freeenv_utf8(env_http_proxy);
     return err < 0 ? err : http_connect(
-        h, path, local_path, hoststr, auth, proxyauth);
+        h, path, local_path, hoststr, auth, proxyauth,&location_changed);
 }
 
-    return location_changed;
-}
 
 /* return non zero if error */
 static int http_open_cnx(URLContext *h, AVDictionary **options)
