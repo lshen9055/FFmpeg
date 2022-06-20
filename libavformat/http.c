@@ -27,6 +27,8 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/bprint.h"
+#include "libavutil/getenv_utf8.h"
 #include "libavutil/opt.h"
 #include "libavutil/time.h"
 #include "libavutil/parseutils.h"
@@ -195,12 +197,13 @@ void ff_http_init_auth_state(URLContext *dest, const URLContext *src)
 static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
 {
     const char *path, *proxy_path, *lower_proto = "tcp", *local_path;
+    char *env_http_proxy, *env_no_proxy;
+    char *hashmark;
     char hostname[1024], hoststr[1024], proto[10];
     char auth[1024], proxyauth[1024] = "";
     char path1[MAX_URL_SIZE];
     char buf[1024], urlbuf[MAX_URL_SIZE];
-    int port, use_proxy, err, location_changed = 0;
-    char prev_location[4096];
+    int port, use_proxy, err = 0;
     HTTPContext *s = h->priv_data;
 
     lower_proto = s->tcp_hook;
@@ -210,9 +213,13 @@ static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
                  path1, sizeof(path1), s->location);
     ff_url_join(hoststr, sizeof(hoststr), NULL, NULL, hostname, port, NULL);
 
-    proxy_path = s->http_proxy ? s->http_proxy : getenv("http_proxy");
-    use_proxy  = !ff_http_match_no_proxy(getenv("no_proxy"), hostname) &&
+    env_http_proxy = getenv_utf8("http_proxy");
+    proxy_path = s->http_proxy ? s->http_proxy : env_http_proxy;
+
+    env_no_proxy = getenv_utf8("no_proxy");
+    use_proxy  = !ff_http_match_no_proxy(env_no_proxy, hostname) &&
                  proxy_path && av_strstart(proxy_path, "http://", NULL);
+    freeenv_utf8(env_no_proxy);
 
     if (!strcmp(proto, "https")) {
         av_dict_set_int(options, "fastopen", 0, 0);
@@ -220,6 +227,12 @@ static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
         use_proxy   = 0;
         if (port < 0)
             port = 443;
+        /* pass http_proxy to underlying protocol */
+        if (s->http_proxy) {
+            err = av_dict_set(options, "http_proxy", s->http_proxy, 0);
+            if (err < 0)
+                goto end;
+        }
     }
     if (port < 0)
         port = 80;
@@ -246,15 +259,13 @@ static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
         err = ffurl_open_whitelist(&s->hd, buf, AVIO_FLAG_READ_WRITE,
                                    &h->interrupt_callback, options,
                                    h->protocol_whitelist, h->protocol_blacklist, h);
-        if (err < 0)
-            return err;
     }
 
-    av_strlcpy(prev_location, s->location, sizeof(prev_location));
-    err = http_connect(h, path, local_path, hoststr,
-                       auth, proxyauth, &location_changed);
-    if (err < 0)
-        return err;
+end:
+    freeenv_utf8(env_http_proxy);
+    return err < 0 ? err : http_connect(
+        h, path, local_path, hoststr, auth, proxyauth);
+}
 
     return location_changed;
 }
