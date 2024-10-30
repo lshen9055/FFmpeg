@@ -4974,12 +4974,8 @@ static int mov_read_sidx(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         if (frag_stream_info)
             frag_stream_info->sidx_pts = timestamp;
 
-<<<<<<< HEAD
 
-        if (av_sat_add64(offset, size) != offset + (uint64_t)size ||
-=======
         if (av_sat_add64(offset, size) != offset + size ||
->>>>>>> ee53bb2399 (avformat/mov: check for pts overflow in mov_read_sidx())
             av_sat_add64(pts, duration) != pts + (uint64_t)duration
         )
             return AVERROR_INVALIDDATA;
