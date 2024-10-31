@@ -755,7 +755,8 @@ static int resolve_content_path(AVFormatContext *s, const char *url, int *max_ur
     baseurl = xmlNodeGetContent(node);
     root_url = (av_strcasecmp(baseurl, "")) ? baseurl : path;
     if (node) {
-        xmlNodeSetContent(node, root_url);
+        xmlNodeSetContent(node, NULL);
+        xmlNodeAddContent(node, root_url);
         updated = 1;
     }
 
@@ -779,7 +780,8 @@ static int resolve_content_path(AVFormatContext *s, const char *url, int *max_ur
             }
             start = (text[0] == token);
             av_strlcat(tmp_str, text + start, tmp_max_url_size);
-            xmlNodeSetContent(baseurl_nodes[i], tmp_str);
+            xmlNodeSetContent(baseurl_nodes[i], NULL);
+            xmlNodeAddContent(baseurl_nodes[i], tmp_str);
             updated = 1;
             xmlFree(text);
         }
