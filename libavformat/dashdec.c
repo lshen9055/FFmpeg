@@ -1874,8 +1874,9 @@ fail:
     return ret;
 }
 
-static int dash_read_header(AVFormatContext *s)
+static int dash_read_header2(AVFormatContext *s,AVDictionary **optiions)
 {
+
     void *u = (s->flags & AVFMT_FLAG_CUSTOM_IO) ? NULL : s->pb;
     DASHContext *c = s->priv_data;
     int ret = 0;
@@ -1895,6 +1896,8 @@ static int dash_read_header(AVFormatContext *s)
 
     if ((ret = save_avio_options(s)) < 0)
         goto fail;
+
+    av_dict_copy(&c->avio_opts, optiions, 0);
 
     /* If this isn't a live stream, fill the total duration of the
      * stream. */
@@ -1959,6 +1962,11 @@ static int dash_read_header(AVFormatContext *s)
     return 0;
 fail:
     return ret;
+}
+
+static int dash_read_header(AVFormatContext *s)
+{
+  return dash_read_header2(s, NULL);
 }
 
 static void recheck_discard_flags(AVFormatContext *s, struct representation **p, int n)
@@ -2183,6 +2191,7 @@ AVInputFormat ff_dash_demuxer = {
     .priv_data_size = sizeof(DASHContext),
     .read_probe     = dash_probe,
     .read_header    = dash_read_header,
+    .read_header2    = dash_read_header2,
     .read_packet    = dash_read_packet,
     .read_close     = dash_close,
     .read_seek      = dash_read_seek,
