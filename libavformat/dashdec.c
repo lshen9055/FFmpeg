@@ -1897,7 +1897,8 @@ static int dash_read_header2(AVFormatContext *s,AVDictionary **optiions)
     if ((ret = save_avio_options(s)) < 0)
         goto fail;
 
-    av_dict_copy(&c->avio_opts, optiions, 0);
+    if (options && *options)
+        av_dict_copy(&c->avio_opts, *options, 0);
 
     /* If this isn't a live stream, fill the total duration of the
      * stream. */
