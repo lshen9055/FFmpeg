@@ -1874,7 +1874,7 @@ fail:
     return ret;
 }
 
-static int dash_read_header2(AVFormatContext *s,AVDictionary **optiions)
+static int dash_read_header2(AVFormatContext *s,AVDictionary **options)
 {
 
     void *u = (s->flags & AVFMT_FLAG_CUSTOM_IO) ? NULL : s->pb;
