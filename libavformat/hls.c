@@ -876,6 +876,7 @@ static int parse_playlist(HLSContext *c, const char *url,
                     pls = c->playlists[c->n_playlists - 1];
                 }
                 seg = av_malloc(sizeof(struct segment));
+                memset(seg, 0, sizeof(seg));
                 if (!seg) {
                     ret = AVERROR(ENOMEM);
                     goto fail;

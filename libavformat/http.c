@@ -1847,7 +1847,7 @@ static int http_proxy_open(URLContext *h, const char *uri, int flags)
     if (*path == '/')
         path++;
 
-    ff_url_join(lower_url, sizeof(lower_url), s->tcp_hook, NULL, hostname, port,
+    ff_url_join(lower_url, sizeof(lower_url), "tcp", NULL, hostname, port,
                 NULL);
 redo:
     ret = ffurl_open_whitelist(&s->hd, lower_url, AVIO_FLAG_READ_WRITE,
