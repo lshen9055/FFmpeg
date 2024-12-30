@@ -423,6 +423,8 @@ static int open_url(AVFormatContext *s, AVIOContext **pb, const char *url,
         }
     } else if (av_strstart(proto_name, "http", NULL)) {
         ;
+    }else if (av_strstart(proto_name, "ijkmediadatasource", NULL)) {
+        ;
     } else
         return AVERROR_INVALIDDATA;
 
