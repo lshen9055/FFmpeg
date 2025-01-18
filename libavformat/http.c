@@ -131,6 +131,7 @@ typedef struct HTTPContext {
     char *tcp_hook;
     char * app_ctx_intptr;
     AVApplicationContext *app_ctx;
+    int is_location;
 } HTTPContext;
 
 #define OFFSET(x) offsetof(HTTPContext, x)
@@ -303,7 +304,7 @@ redo:
     }
     if ((s->http_code == 301 || s->http_code == 302 ||
          s->http_code == 303 || s->http_code == 307) &&
-        location_changed == 1) {
+        s->is_location == 1) {
         /* url moved, get next */
         ffurl_closep(&s->hd);
         if (redirects++ >= MAX_REDIRECTS)
@@ -313,6 +314,7 @@ redo:
         memset(&s->auth_state, 0, sizeof(s->auth_state));
         attempts         = 0;
         location_changed = 0;
+        s->is_location == 0;
         goto redo;
     }
     return 0;
@@ -675,6 +677,7 @@ static int parse_location(HTTPContext *s, const char *p)
         return AVERROR(ENOMEM);
     av_free(s->location);
     s->location = new_loc;
+    s->is_location = 1;
     return 0;
 }
 
