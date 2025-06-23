@@ -590,7 +590,7 @@ static struct fragment * get_Fragment(char *range)
         char *str_end_offset;
         char *str_offset = av_strtok(range, "-", &str_end_offset);
         seg->url_offset = strtoll(str_offset, NULL, 10);
-        seg->size = strtoll(str_end_offset, NULL, 10) - seg->url_offset;
+        seg->size = strtoll(str_end_offset, NULL, 10) - seg->url_offset + 1;
     }
 
     return seg;
@@ -1807,7 +1807,7 @@ static int reopen_demux_for_component(AVFormatContext *s, struct representation 
     } else {
         ffio_init_context(&pls->pb, avio_ctx_buffer , INITIAL_BUFFER_SIZE, 0, pls, read_data, NULL, seek_data);
     }
-    // pls->pb.seekable = 0;
+    pls->pb.seekable = 0;
 
     if ((ret = ff_copy_whiteblacklists(pls->ctx, s)) < 0)
         goto fail;
@@ -1828,6 +1828,7 @@ static int reopen_demux_for_component(AVFormatContext *s, struct representation 
 
     // provide additional information from mpd if available
     ret = avformat_open_input(&pls->ctx, "", in_fmt, &in_fmt_opts); //pls->init_section->url
+    pls->pb.seekable = 0;
     av_dict_free(&in_fmt_opts);
     if (ret < 0)
         goto fail;
